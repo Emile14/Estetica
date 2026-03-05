@@ -1,0 +1,1 @@
+Van a crear una base de datos desde shell de xampp donde se llame estetica y van a hacer un php artisan migrate y es todo
