@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nombre');
             $table->string('email')->unique();
+            $table->string('rol'); // <--- ¡AGREGA ESTA LÍNEA!
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('telefono');
