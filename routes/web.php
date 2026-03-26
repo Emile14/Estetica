@@ -1,16 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\ProductoController;
 
+// Página de inicio
 Route::get('/', function () {
     return view('welcome');
 });
-use App\Models\Cliente;
 
-Route::get('/ver-clientes', function () {
-    $clientes = Cliente::all();
-    return view('lista_clientes', compact('clientes'));
-});
-use App\Http\Controllers\ProductoController;
+// Rutas para Clientes
+Route::resource('clientes', ClienteController::class);
 
+// Rutas para Productos
 Route::resource('productos', ProductoController::class);
