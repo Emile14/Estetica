@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'rol',       // Agregamos tu columna rol
         'telefono',  // Agregamos tu columna telefono
+        'pais'
     ];
 
     

@@ -39,3 +39,7 @@ Route::get('/entrar/{id}', function ($id) {
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/salir', function () {
+    Auth::logout();
+    return redirect('/login');
+});
