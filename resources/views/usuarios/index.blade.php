@@ -1,69 +1,48 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold text-dark"><i class="fa-solid fa-users-gear me-2"></i>Gestión de Personal</h2>
-            <p class="text-muted">Administración de accesos para la estética</p>
-        </div>
-        <a href="{{ route('usuarios.create') }}" class="btn btn-dark px-4 shadow-sm">
-            <i class="fa-solid fa-user-plus me-1"></i> Nuevo Usuario
+<div class="max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-playfair font-bold text-oscuro flex items-center gap-3">
+            <i class="bi bi-person-badge text-blue-500"></i> Personal del Salón
+        </h2>
+        <a href="{{ route('usuarios.create') }}" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg shadow-sm hover:bg-blue-700 transition font-semibold flex items-center gap-2">
+            <i class="bi bi-person-plus-fill"></i> Nuevo Usuario
         </a>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success border-0 shadow-sm mb-4">
-            <i class="fa-solid fa-circle-check me-2"></i> {{ session('success') }}
-        </div>
-    @endif
-
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">Nombre</th>
-                            <th>Email / Teléfono</th>
-                            <th>Rol</th>
-                            <th class="text-center pe-4">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($usuarios as $usuario)
-                        <tr>
-                            <td class="ps-4">
-                                <div class="fw-bold text-dark">{{ $usuario->nombre }}</div>
-                                <small class="text-muted">ID: #{{ $usuario->id }}</small>
-                            </td>
-                            <td>
-                                <div>{{ $usuario->email }}</div>
-                                <small class="text-muted"><i class="fa-solid fa-phone fa-xs me-1"></i>{{ $usuario->telefono }}</small>
-                            </td>
-                            <td>
-                                <span class="badge {{ $usuario->rol == 'Administrador' ? 'bg-danger' : ($usuario->rol == 'Recepcionista' ? 'bg-primary' : 'bg-info text-dark') }}">
-                                    {{ $usuario->rol }}
-                                </span>
-                            </td>
-                            <td class="text-center pe-4">
-                                <div class="btn-group shadow-sm">
-                                    <a href="{{ route('usuarios.edit', $usuario->id) }}" class="btn btn-white btn-sm border" title="Editar">
-                                        <i class="fa-solid fa-pen text-primary"></i>
-                                    </a>
-                                    <form action="{{ route('usuarios.destroy', $usuario->id) }}" method="POST" class="d-inline">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-white btn-sm border" onclick="return confirm('¿Eliminar este usuario?')">
-                                            <i class="fa-solid fa-trash text-danger"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+    <div class="bg-white rounded-2xl shadow-sm border-t-[5px] border-blue-500 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-500 text-sm border-b border-gray-100">
+                        <th class="py-4 px-6 font-semibold">Nombre</th>
+                        <th class="py-4 px-6 font-semibold">Email</th>
+                        <th class="py-4 px-6 font-semibold">Rol</th>
+                        <th class="py-4 px-6 font-semibold text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($usuarios as $usuario)
+                    <tr class="hover:bg-gray-50 transition duration-150">
+                        <td class="py-4 px-6 font-bold text-oscuro">{{ $usuario->nombre }}</td>
+                        <td class="py-4 px-6 text-gray-500">{{ $usuario->email }}</td>
+                        <td class="py-4 px-6">
+                            <span class="bg-dorado text-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm">{{ $usuario->rol }}</span>
+                        </td>
+                        <td class="py-4 px-6 text-center">
+                            <a href="{{ route('usuarios.edit', $usuario->id) }}" class="text-blue-500 hover:text-blue-700 mx-2"><i class="bi bi-pencil-square text-lg"></i></a>
+                            <form action="{{ route('usuarios.destroy', $usuario->id) }}" method="POST" class="inline">
+                                @csrf @method('DELETE')
+                                <button class="text-red-500 hover:text-red-700 mx-2" onclick="return confirm('¿Eliminar usuario?')"><i class="bi bi-trash3-fill text-lg"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="4" class="py-12 text-center text-gray-400">No hay personal registrado.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

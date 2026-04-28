@@ -6,20 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('reporte_financieros', function (Blueprint $table) {
             $table->id();
+            $table->date('fecha'); // Para saber qué día fue la venta
+            $table->string('concepto'); // Ej. "Corte de cabello"
+            $table->string('atendido_por'); // Ej. "Blanca"
+            $table->decimal('monto', 8, 2); // Para guardar dinero con 2 decimales
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('reporte_financieros');

@@ -1,60 +1,48 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold text-dark"><i class="fa-solid fa-boxes-stacked me-2"></i>Inventario de Productos</h2>
-            <p class="text-muted">Stock y precios de Blanca Glow</p>
-        </div>
-        {{-- Solo Admin puede crear --}}
-        @if(Auth::user()->rol == 'Administrador')
-            <a href="{{ route('productos.create') }}" class="btn btn-dark px-4 shadow-sm">
-                <i class="fa-solid fa-plus me-1"></i> Nuevo Producto
-            </a>
-        @endif
+<div class="max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-playfair font-bold text-oscuro flex items-center gap-3">
+            <i class="bi bi-box-seam text-rosa-fuerte"></i> Inventario
+        </h2>
+        <a href="{{ route('productos.create') }}" class="bg-rosa-fuerte text-white px-5 py-2.5 rounded-lg shadow-sm hover:bg-[#b87a80] transition font-semibold flex items-center gap-2">
+            <i class="bi bi-plus-circle"></i> Nuevo Producto
+        </a>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-0">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th class="ps-4">Producto</th>
-                        <th>Precio</th>
-                        {{-- Solo Admin ve la columna de acciones --}}
-                        @if(Auth::user()->rol == 'Administrador')
-                            <th class="text-center pe-4">Acciones</th>
-                        @endif
+    <div class="bg-white rounded-2xl shadow-sm border-t-[5px] border-rosa-fuerte overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-500 text-sm border-b border-gray-100">
+                        <th class="py-4 px-6 font-semibold">Producto</th>
+                        <th class="py-4 px-6 font-semibold">Stock</th>
+                        <th class="py-4 px-6 font-semibold">Precio</th>
+                        <th class="py-4 px-6 font-semibold text-center">Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach($productos as $producto)
-                    <tr>
-                        <td class="ps-4">
-                            <div class="fw-bold text-dark">{{ $producto->nombre }}</div>
-                            <small class="text-muted">{{ Str::limit($producto->descripcion, 60) }}</small>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($productos as $producto)
+                    <tr class="hover:bg-gray-50 transition duration-150">
+                        <td class="py-4 px-6 font-bold text-oscuro">{{ $producto->nombre }}</td>
+                        <td class="py-4 px-6">
+                            <span class="{{ $producto->stock < 5 ? 'text-red-600 bg-red-50' : 'text-emerald-600 bg-emerald-50' }} px-3 py-1 rounded-full text-xs font-bold">
+                                {{ $producto->stock }} pz
+                            </span>
                         </td>
-                        <td>
-                            <span class="text-success fw-bold">${{ number_format($producto->precio, 2) }}</span>
+                        <td class="py-4 px-6 text-gray-600 font-semibold">${{ number_format($producto->precio, 2) }}</td>
+                        <td class="py-4 px-6 text-center">
+                            <a href="{{ route('productos.edit', $producto->id) }}" class="text-blue-500 hover:text-blue-700 mx-2"><i class="bi bi-pencil-square text-lg"></i></a>
+                            <form action="{{ route('productos.destroy', $producto->id) }}" method="POST" class="inline">
+                                @csrf @method('DELETE')
+                                <button class="text-red-500 hover:text-red-700 mx-2" onclick="return confirm('¿Eliminar producto?')"><i class="bi bi-trash3-fill text-lg"></i></button>
+                            </form>
                         </td>
-                        @if(Auth::user()->rol == 'Administrador')
-                        <td class="text-center pe-4">
-                            <div class="btn-group shadow-sm">
-                                <a href="{{ route('productos.edit', $producto->id) }}" class="btn btn-white btn-sm border">
-                                    <i class="fa-solid fa-pen text-primary"></i>
-                                </a>
-                                <form action="{{ route('productos.destroy', $producto->id) }}" method="POST" class="d-inline">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-white btn-sm border" onclick="return confirm('¿Eliminar producto?')">
-                                        <i class="fa-solid fa-trash text-danger"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                        @endif
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr><td colspan="4" class="py-12 text-center text-gray-400">El inventario está vacío.</td></tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

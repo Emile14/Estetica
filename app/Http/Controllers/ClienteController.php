@@ -10,11 +10,12 @@ class ClienteController extends Controller
     /**
      * Muestra la tabla con las columnas de phpMyAdmin.
      */
-    public function index()
-    {
-        $clientes = Cliente::all();
-        return view('lista_clientes', compact('clientes'));
-    }
+public function index()
+{
+    $clientes = Cliente::all();
+    // Cambiamos 'lista_clientes' por 'clientes.index'
+    return view('clientes.index', compact('clientes'));
+}
 
     /**
      * Muestra el formulario para crear.

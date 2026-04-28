@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
     /**
-     * Create a new controller instance.
-     *
-     * @return void
+     * Exige autenticación para usar este controlador.
      */
     public function __construct()
     {
@@ -17,18 +16,23 @@ class HomeController extends Controller
     }
 
     /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
+     * Redirige al usuario a su panel correspondiente según su rol.
      */
     public function index()
     {
-        // Si el usuario es el Jefe, lo mandamos al panel de usuarios
-        if (auth()->user()->rol == 'Administrador') {
-            return redirect()->route('usuarios.index');
+        $usuario = Auth::user();
+
+        // El Administrador va directo a gestionar a su personal
+        if ($usuario->rol === 'Administrador') {
+            return redirect()->route('usuarios.index'); 
         }
-        
-        // Si es la Recepcionista o Estilista, los mandamos al inventario de productos
-        return redirect()->route('productos.index');
+
+        // La Recepcionista va directo a la agenda/clientes para trabajar
+        if ($usuario->rol === 'Recepcionista') {
+            return redirect()->route('clientes.index');
+        }
+
+        // Si es un rol no definido, va a una pantalla de bienvenida genérica
+        return view('home'); 
     }
 }

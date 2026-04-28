@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ReporteFinanciero extends Model
 {
-    public function administrador() {
-        return $this->belongsTo(Administrador::class);
-        }
+    use HasFactory;
+
+    protected $fillable = ['fecha', 'concepto', 'atendido_por', 'monto'];
 }
