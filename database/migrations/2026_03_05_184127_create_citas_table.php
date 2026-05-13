@@ -6,25 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('citas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cliente_id')->constrained('clientes');
+            $table->foreignId('cliente_id')->constrained('clientes')->onDelete('cascade');
+            
+            // Agregamos las columnas que necesita nuestro formulario
+            $table->string('servicio');
             $table->date('fecha');
-            $table->time('hora_inicio');
-            $table->time('hora_fin');
-            $table->string('estado')->default('pendiente');
-            $table->decimal('total', 10, 2)->default(0);
+            $table->time('hora');
+            $table->string('estado')->default('Pendiente');
+            
+            // Esto es crucial para que no falle el updated_at y created_at
+            $table->timestamps(); 
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('citas');

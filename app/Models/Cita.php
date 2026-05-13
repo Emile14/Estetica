@@ -2,15 +2,25 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Cita extends Model
 {
-    public function cliente() {
-    return $this->belongsTo(Cliente::class); // Una cita pertenece a un cliente 
-}
+    use HasFactory;
 
-public function servicios() {
-    return $this->belongsToMany(Servicior::class, 'detalle_citas'); // Una cita tiene muchos servicios 
-}
+    // Permitir guardar estos datos desde el formulario
+    protected $fillable = [
+        'cliente_id',
+        'servicio',
+        'fecha',
+        'hora',
+        'estado'
+    ];
+
+    // Relación: Una cita pertenece a un cliente
+    public function cliente()
+    {
+        return $this->belongsTo(Cliente::class);
+    }
 }
