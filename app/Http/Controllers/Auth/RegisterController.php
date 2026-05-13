@@ -4,70 +4,59 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Cliente; // IMPORTANTE: Agrega esta línea
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB; // IMPORTANTE: Agrega esta línea
 
 class RegisterController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Register Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller handles the registration of new users as well as their
-    | validation and creation. By default this controller uses a trait to
-    | provide this functionality without requiring any additional code.
-    |
-    */
-
     use RegistersUsers;
 
-    /**
-     * Where to redirect users after registration.
-     *
-     * @var string
-     */
     protected $redirectTo = '/home';
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware('guest');
     }
 
-    /**
-     * Get a validator for an incoming registration request.
-     *
-     * @return \Illuminate\Contracts\Validation\Validator
-     */
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'name' => ['required', 'string', 'max:255'],
+            'nombre' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'telefono' => ['required', 'string', 'max:15'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
     }
 
     /**
-     * Create a new user instance after a valid registration.
-     *
-     * @return User
+     * Crea una nueva instancia de usuario y un registro de cliente simultáneo.
      */
-    // Cambia la palabra 'name' por 'nombre' del lado izquierdo:
-protected function create(array $data)
-{
-    return User::create([
-        'nombre' => $data['name'], 
-        'email' => $data['email'],
-        'password' => Hash::make($data['password']),
-        'rol' => 'Cliente', 
-        'telefono' => '0000000000', // <--- Agrega esta línea con un número falso
-    ]);
-}
+    protected function create(array $data)
+    {
+        // Usamos una transacción para que, si algo falla, no se cree uno sin el otro
+        return DB::transaction(function () use ($data) {
+            
+            // 1. Crear el usuario para que pueda iniciar sesión
+            $user = User::create([
+                'nombre' => $data['nombre'],
+                'email' => $data['email'],
+                'telefono' => $data['telefono'],
+                'password' => Hash::make($data['password']),
+                'rol' => 'Cliente',
+            ]);
+
+            // 2. Crear automáticamente la ficha en la tabla de clientes
+            // para que aparezca en la lista de la administración
+            Cliente::create([
+                'nombre' => $data['nombre'],
+                'email' => $data['email'],
+                'telefono' => $data['telefono'],
+            ]);
+
+            return $user;
+        });
+    }
 }

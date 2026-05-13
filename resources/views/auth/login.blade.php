@@ -1,73 +1,39 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Iniciar Sesión') }}</div>
-
-                <div class="card-body">
-                    <form method="POST" action="{{ route('login') }}">
-                        @csrf
-
-                        <div class="row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Correo Electrónico') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
-
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <label for="password" class="col-md-4 col-form-label text-md-end">{{ __('Contraseña') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
-
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6 offset-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-
-                                    <label class="form-check-label" for="remember">
-                                        {{ __('Recuerdame') }}
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-0">
-                            <div class="col-md-8 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Iniciar Sesión') }}
-                                </button>
-
-                                @if (Route::has('password.request'))
-                                    <a class="btn btn-link" href="{{ route('password.request') }}">
-                                        {{ __('¿Olvidaste tu contraseña?') }}
-                                    </a>
-                                @endif
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
+<div class="min-h-[80vh] flex items-center justify-center">
+    <div class="bg-white p-10 rounded-3xl shadow-xl border border-rosa-glow w-full max-w-md">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-playfair font-bold text-oscuro">Bienvenida</h1>
+            <p class="text-gray-500 mt-2">Accede al sistema de Blanca Glow</p>
         </div>
+
+        <form method="POST" action="{{ route('login') }}">
+            @csrf
+
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Correo Electrónico</label>
+                <input type="email" name="email" required autofocus
+                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rosa-fuerte focus:ring-4 focus:ring-rosa-glow/30 outline-none transition">
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Contraseña</label>
+                <input type="password" name="password" required
+                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rosa-fuerte focus:ring-4 focus:ring-rosa-glow/30 outline-none transition">
+            </div>
+
+            <button type="submit" class="w-full bg-rosa-fuerte text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-[#b87a80] transition transform hover:scale-[1.02]">
+                Entrar al Sistema
+            </button>
+
+            <div class="mt-8 text-center border-t border-gray-100 pt-6">
+                <p class="text-gray-600">¿Eres nueva?</p>
+                <a href="{{ route('register') }}" class="text-rosa-fuerte font-bold hover:underline">
+                    Crea una cuenta de cliente aquí
+                </a>
+            </div>
+        </form>
     </div>
 </div>
 @endsection
