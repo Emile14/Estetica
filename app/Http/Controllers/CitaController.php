@@ -8,10 +8,22 @@ use Illuminate\Http\Request;
 
 class CitaController extends Controller
 {
-    public function index()
+public function index()
     {
-        $citas = Cita::with('cliente')->orderBy('fecha')->orderBy('hora')->get();
-        return view('citas.index', compact('citas'));
+        $user = auth()->user();
+        
+        if ($user->rol == 'Cliente') {
+            // El cliente SOLO ve su propio historial de citas (Pendientes y Confirmadas)
+            $citas = Cita::where('cliente_id', $user->cliente->id)->orderBy('fecha', 'desc')->get();
+            $citasPendientes = collect(); // Array vacío porque el cliente no aprueba
+        } else {
+            // Admin y Recepcionista ven la Agenda Oficial (Solo las Confirmadas)
+            $citas = Cita::where('estado', 'Confirmada')->orderBy('fecha', 'asc')->get();
+            // Y cargamos las solicitudes nuevas para mostrarlas en las notificaciones
+            $citasPendientes = Cita::with('cliente')->where('estado', 'Pendiente')->orderBy('fecha', 'asc')->get();
+        }
+
+        return view('citas.index', compact('citas', 'citasPendientes'));
     }
 
     public function create()

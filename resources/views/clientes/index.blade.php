@@ -19,6 +19,7 @@
                         <th class="py-4 px-6 font-semibold">Nombre</th>
                         <th class="py-4 px-6 font-semibold">Teléfono</th>
                         <th class="py-4 px-6 font-semibold">Email</th>
+                        <th class="py-4 px-6 font-semibold">País</th>
                         <th class="py-4 px-6 font-semibold text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -28,6 +29,11 @@
                         <td class="py-4 px-6 font-bold text-oscuro">{{ $cliente->nombre }}</td>
                         <td class="py-4 px-6 text-gray-600">{{ $cliente->telefono }}</td>
                         <td class="py-4 px-6 text-gray-500">{{ $cliente->email }}</td>
+                        <td class="py-4 px-6">
+                            <span class="px-3 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-full text-xs font-semibold uppercase tracking-wider">
+                                {{ $cliente->pais ?? 'No especificado' }}
+                            </span>
+                        </td>
                         <td class="py-4 px-6 text-center">
                             <a href="{{ route('clientes.edit', $cliente->id) }}" class="text-blue-500 hover:text-blue-700 mx-2"><i class="bi bi-pencil-square text-lg"></i></a>
                             <form action="{{ route('clientes.destroy', $cliente->id) }}" method="POST" class="inline">
@@ -37,7 +43,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="4" class="py-12 text-center text-gray-400">No hay clientes registrados.</td></tr>
+                    <tr><td colspan="5" class="py-12 text-center text-gray-400">No hay clientes registrados.</td></tr>
                     @endforelse
                 </tbody>
             </table>

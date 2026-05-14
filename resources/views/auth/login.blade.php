@@ -8,6 +8,13 @@
             <p class="text-gray-500 mt-2">Accede al sistema de Blanca Glow</p>
         </div>
 
+        @if(session('success'))
+            <div class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-r-xl shadow-sm" role="alert">
+                <p class="font-bold">¡Registro Exitoso!</p>
+                <p class="text-sm">{{ session('success') }}</p>
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('login') }}">
             @csrf
 

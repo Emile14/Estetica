@@ -16,6 +16,7 @@ class User extends Authenticatable
         'password',
         'rol',
         'telefono',
+        'pais', // Asegúrate de tener este campo si usas la API de países
     ];
 
     protected $hidden = [
@@ -26,4 +27,10 @@ class User extends Authenticatable
     // Mapeo para que Laravel encuentre los campos aunque estén en español
     public function getNameAttribute() { return $this->nombre; }
     public function getRoleAttribute() { return $this->rol; }
+
+    // 👇 AQUÍ ESTÁ LA MAGIA: Le enseñamos a Laravel a buscar al cliente vinculado
+    public function cliente()
+    {
+        return $this->hasOne(Cliente::class);
+    }
 }
