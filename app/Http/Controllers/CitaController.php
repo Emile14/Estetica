@@ -36,8 +36,20 @@ class CitaController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
-        $clienteId = ($user->rol == 'Cliente') ? $user->cliente->id : $request->cliente_id;
 
+        // 1. BARRERA DE SEGURIDAD: Asignación y validación estricta del Cliente
+        if ($user->rol == 'Administrador' || $user->rol == 'Recepcionista') {
+            if (!$request->cliente_id) {
+                return back()->with('error', 'Error: Debes seleccionar a un cliente de la lista para agendarle la cita.');
+            }
+            $clienteId = $request->cliente_id;
+            $estado = 'Confirmada';
+        } else {
+            $clienteId = $user->cliente->id;
+            $estado = 'Pendiente';
+        }
+
+        // 2. VALIDACIÓN: Evitar múltiples solicitudes pendientes (Solo para Clientes)
         if ($user->rol == 'Cliente') {
             $tienePendiente = Cita::where('cliente_id', $clienteId)->where('estado', 'Pendiente')->exists();
             if ($tienePendiente) {
@@ -45,6 +57,7 @@ class CitaController extends Controller
             }
         }
 
+        // 3. VALIDACIÓN: Evitar empalme de horarios
         $ocupado = Cita::where('fecha', $request->fecha)
                        ->where('hora', $request->hora)
                        ->where('estado', 'Confirmada')
@@ -53,8 +66,8 @@ class CitaController extends Controller
             return back()->with('error', 'Esta fecha y hora ya están ocupadas. Por favor elige otro horario.');
         }
 
-        return DB::transaction(function () use ($request, $user, $clienteId) {
-            $estado = ($user->rol == 'Cliente') ? 'Pendiente' : 'Confirmada';
+        // 4. GUARDADO DE CITA Y PRODUCTO
+        return DB::transaction(function () use ($request, $user, $clienteId, $estado) {
             
             $servicio = Servicior::where('nombre', $request->servicio)->first();
             $total = $servicio->precio ?? 0;
