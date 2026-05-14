@@ -3,23 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cita;
-use App\Models\Cliente;
+use App\Models\Servicior;
+use App\Models\Producto;
+use App\Models\ReservaProducto;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CitaController extends Controller
 {
-public function index()
+    public function index()
     {
         $user = auth()->user();
         
         if ($user->rol == 'Cliente') {
-            // El cliente SOLO ve su propio historial de citas (Pendientes y Confirmadas)
             $citas = Cita::where('cliente_id', $user->cliente->id)->orderBy('fecha', 'desc')->get();
-            $citasPendientes = collect(); // Array vacío porque el cliente no aprueba
+            $citasPendientes = collect();
         } else {
-            // Admin y Recepcionista ven la Agenda Oficial (Solo las Confirmadas)
             $citas = Cita::where('estado', 'Confirmada')->orderBy('fecha', 'asc')->get();
-            // Y cargamos las solicitudes nuevas para mostrarlas en las notificaciones
             $citasPendientes = Cita::with('cliente')->where('estado', 'Pendiente')->orderBy('fecha', 'asc')->get();
         }
 
@@ -28,54 +28,75 @@ public function index()
 
     public function create()
     {
-        $clientes = Cliente::orderBy('nombre')->get();
-        return view('citas.create', compact('clientes'));
+        $servicios = Servicior::all();
+        $productos = Producto::where('stock', '>', 0)->get();
+        return view('citas.create', compact('servicios', 'productos'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'cliente_id' => 'required|exists:clientes,id',
-            'servicio'   => 'required|string',
-            'fecha'      => 'required|date',
-            'hora'       => 'required',
-            'estado'     => 'required|string',
-        ]);
+        $user = auth()->user();
+        $clienteId = ($user->rol == 'Cliente') ? $user->cliente->id : $request->cliente_id;
 
-        Cita::create($request->all());
+        if ($user->rol == 'Cliente') {
+            $tienePendiente = Cita::where('cliente_id', $clienteId)->where('estado', 'Pendiente')->exists();
+            if ($tienePendiente) {
+                return back()->with('error', 'Ya tienes una solicitud de cita pendiente. Espera a que sea procesada.');
+            }
+        }
 
-        return redirect()->route('citas.index')->with('success', 'Cita agendada correctamente.');
+        $ocupado = Cita::where('fecha', $request->fecha)
+                       ->where('hora', $request->hora)
+                       ->where('estado', 'Confirmada')
+                       ->exists();
+        if ($ocupado) {
+            return back()->with('error', 'Esta fecha y hora ya están ocupadas. Por favor elige otro horario.');
+        }
+
+        return DB::transaction(function () use ($request, $user, $clienteId) {
+            $estado = ($user->rol == 'Cliente') ? 'Pendiente' : 'Confirmada';
+            
+            $servicio = Servicior::where('nombre', $request->servicio)->first();
+            $total = $servicio->precio ?? 0;
+
+            if ($request->producto_id) {
+                $prod = Producto::find($request->producto_id);
+                $total += ($prod->precio * $request->cantidad_producto);
+            }
+
+            $cita = Cita::create([
+                'cliente_id' => $clienteId,
+                'servicio' => $request->servicio,
+                'fecha' => $request->fecha,
+                'hora' => $request->hora,
+                'estado' => $estado,
+                'total' => $total,
+            ]);
+
+            if ($request->producto_id) {
+                ReservaProducto::create([
+                    'cliente_id' => $clienteId,
+                    'producto_id' => $request->producto_id,
+                    'cita_id' => $cita->id,
+                    'cantidad' => $request->cantidad_producto,
+                    'estado' => ($user->rol == 'Cliente') ? 'Pendiente' : 'Apartado'
+                ]);
+            }
+
+            return redirect()->route('citas.index')->with('success', 'Solicitud enviada correctamente.');
+        });
     }
 
-    public function show(Cita $cita)
+    public function aprobar(Cita $cita)
     {
-        return redirect()->route('citas.index');
-    }
-
-    public function edit(Cita $cita)
-    {
-        $clientes = Cliente::orderBy('nombre')->get();
-        return view('citas.edit', compact('cita', 'clientes'));
-    }
-
-    public function update(Request $request, Cita $cita)
-    {
-        $request->validate([
-            'cliente_id' => 'required|exists:clientes,id',
-            'servicio'   => 'required|string',
-            'fecha'      => 'required|date',
-            'hora'       => 'required',
-            'estado'     => 'required|string',
-        ]);
-
-        $cita->update($request->all());
-
-        return redirect()->route('citas.index')->with('success', 'Cita actualizada correctamente.');
+        $cita->update(['estado' => 'Confirmada']);
+        ReservaProducto::where('cita_id', $cita->id)->update(['estado' => 'Apartado']);
+        return back()->with('success', 'Cita confirmada y producto apartado en inventario.');
     }
 
     public function destroy(Cita $cita)
     {
         $cita->delete();
-        return redirect()->route('citas.index')->with('success', 'Cita eliminada.');
+        return back()->with('success', 'Cita cancelada.');
     }
 }

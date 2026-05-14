@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('cliente_id')->constrained()->onDelete('cascade');
             $table->foreignId('producto_id')->constrained()->onDelete('cascade');
+            $table->foreignId('cita_id')->nullable()->constrained('citas')->onDelete('cascade');
             $table->integer('cantidad')->default(1);
             $table->string('estado')->default('Pendiente');
             $table->timestamps();

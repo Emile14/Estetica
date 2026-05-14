@@ -3,18 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Producto;
-use App\Models\ReservaProducto; // 👈 ¡Esta era la importación que faltaba!
+use App\Models\ReservaProducto;
 use Illuminate\Http\Request;
 
 class ProductoController extends Controller
 {
     public function index()
     {
-        $productos = Producto::all();
+        $productos = Producto::withSum(['reservas as apartados' => function($query) {
+            $query->where('estado', 'Apartado');
+        }], 'cantidad')->get();
 
-        // Si es Admin o Recepción, busca las reservas pendientes. Si es cliente, crea un arreglo vacío.
         if (auth()->user()->rol != 'Cliente') {
-            $reservasPendientes = ReservaProducto::with(['cliente', 'producto'])->where('estado', 'Pendiente')->get();
+            $reservasPendientes = ReservaProducto::with(['cliente', 'producto', 'cita'])
+                ->where('estado', 'Apartado')
+                ->get();
         } else {
             $reservasPendientes = collect(); 
         }
@@ -28,7 +31,7 @@ class ProductoController extends Controller
 
     public function store(Request $request) {
         Producto::create($request->all());
-        return redirect()->route('productos.index')->with('success', 'Producto agregado al catálogo.');
+        return redirect()->route('productos.index')->with('success', 'Producto agregado con éxito.');
     }
 
     public function edit(Producto $producto) { 
@@ -45,32 +48,20 @@ class ProductoController extends Controller
         return redirect()->route('productos.index')->with('success', 'Producto eliminado.');
     }
 
-    // --- FUNCIONES DE APARTADO ---
-
-    public function solicitar(Request $request, Producto $producto) {
-        ReservaProducto::create([
-            'cliente_id' => auth()->user()->cliente->id,
-            'producto_id' => $producto->id,
-            'cantidad' => 1,
-            'estado' => 'Pendiente'
-        ]);
-        return back()->with('success', '¡Solicitud enviada! El administrador la revisará pronto.');
-    }
-
     public function aprobarReserva(ReservaProducto $reserva) {
         $producto = $reserva->producto;
         if ($producto->stock >= $reserva->cantidad) {
             $producto->stock -= $reserva->cantidad;
             $producto->save();
             
-            $reserva->update(['estado' => 'Aprobado']);
-            return back()->with('success', 'Producto apartado y stock descontado.');
+            $reserva->update(['estado' => 'Entregado']); 
+            return back()->with('success', 'Producto entregado y descontado del stock general.');
         }
-        return back()->with('error', 'No hay stock suficiente en el inventario.');
+        return back()->with('error', 'No hay stock suficiente.');
     }
 
     public function rechazarReserva(ReservaProducto $reserva) {
         $reserva->update(['estado' => 'Rechazado']);
-        return back()->with('success', 'Solicitud rechazada.');
+        return back()->with('success', 'Solicitud cancelada.');
     }
 }

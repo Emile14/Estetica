@@ -9,10 +9,10 @@ class Producto extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'nombre',
-        'descripcion',
-        'precio',
-        'stock',
-    ];
+    protected $fillable = ['nombre', 'categoria', 'precio', 'stock', 'descripcion'];
+
+    public function reservas()
+    {
+        return $this->hasMany(ReservaProducto::class);
+    }
 }
